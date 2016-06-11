@@ -1,5 +1,8 @@
 module Main exposing (..)
 
+
+import Board
+import Cell
 import Html exposing (..)
 import Html.App as Html
 import Html.Events as Html
@@ -7,27 +10,11 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events as Svg
 
-
 type alias Model =
-    { boardInfo : BoardInfo
-    , cells : List Cell
+    { boardInfo : Board.Config
+    , cells : List Cell.Model
     }
 
-
-type alias BoardInfo =
-    { cols : Int
-    , rows : Int
-    , cellSize : Int
-    , borderSize : Int
-    , width : Int
-    , height : Int
-    }
-
-
-type alias Cell =
-    { id : Int
-    , color : String
-    }
 
 
 type Msg
@@ -35,22 +22,10 @@ type Msg
 
 
 init : Int -> Int -> Int -> Int -> Model
-init cols rows cellSize borderSize =
+init rows cols cellSize borderSize =
     let
-        width =
-            cols * cellSize + (cols + 1) * borderSize
-
-        height =
-            rows * cellSize + (rows + 1) * borderSize
-
         boardInfo =
-            { cols = cols
-            , rows = rows
-            , cellSize = cellSize
-            , borderSize = borderSize
-            , width = width
-            , height = height
-            }
+            Board.init rows cols cellSize borderSize
 
         cells =
             List.map (\id -> { id = id, color = "#ff00ff" }) [0..(cols * rows - 1)]
@@ -81,7 +56,7 @@ main =
         Html.program
             { init = ( model, Cmd.none )
             , update = update
-            , view = view (cell model.boardInfo)
+            , view = view (Cell.view model.boardInfo)
             , subscriptions = always Sub.none
             }
 
@@ -91,39 +66,13 @@ update msg model =
     model ! []
 
 
-view : (Cell -> Svg Msg) -> Model -> Html Msg
-view cellRender model =
+view : (Cell.Model -> Svg Msg) -> Model -> Html Msg
+view cellView model =
     div []
         [ Svg.svg
             [ width (toString model.boardInfo.width)
             , height (toString model.boardInfo.height)
             ]
-            (List.map cellRender model.cells)
+            (List.map cellView model.cells)
         ]
 
-
-cell : BoardInfo -> Cell -> Svg Msg
-cell boardInfo cell =
-    let
-        row =
-            cell.id // boardInfo.cols
-
-        col =
-            cell.id % boardInfo.cols
-
-        x' =
-            col * (boardInfo.cellSize + boardInfo.borderSize) + boardInfo.borderSize // 2
-
-        y' =
-            row * (boardInfo.cellSize + boardInfo.borderSize) + boardInfo.borderSize // 2
-    in
-        rect
-            [ x (toString x')
-            , y (toString y')
-            , width <| toString (boardInfo.cellSize + boardInfo.borderSize)
-            , height <| toString (boardInfo.cellSize + boardInfo.borderSize)
-            , fill cell.color
-            , stroke "black"
-            , strokeWidth (toString boardInfo.borderSize)
-            ]
-            []
