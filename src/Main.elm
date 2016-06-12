@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-
 import Board
 import Cell
 import Html exposing (..)
@@ -10,11 +9,11 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events as Svg
 
+
 type alias Model =
     { board : Board.Config
     , cells : List Cell.Model
     }
-
 
 
 type Msg
@@ -39,10 +38,10 @@ main : Program Never
 main =
     let
         cols =
-            16
+            32
 
         rows =
-            16
+            32
 
         cellSize =
             16
