@@ -28,7 +28,7 @@ init rows cols cellSize borderSize =
             Board.init rows cols cellSize borderSize
 
         cells =
-            List.map (\id -> { id = id, color = "#ff00ff" }) [0..(cols * rows - 1)]
+            List.map (\id -> Cell.init board id "#00aaff") [0..(cols * rows - 1)]
     in
         { board = board
         , cells = cells
