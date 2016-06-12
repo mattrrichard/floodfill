@@ -11,7 +11,7 @@ import Svg.Attributes exposing (..)
 import Svg.Events as Svg
 
 type alias Model =
-    { boardInfo : Board.Config
+    { board : Board.Config
     , cells : List Cell.Model
     }
 
@@ -24,13 +24,13 @@ type Msg
 init : Int -> Int -> Int -> Int -> Model
 init rows cols cellSize borderSize =
     let
-        boardInfo =
+        board =
             Board.init rows cols cellSize borderSize
 
         cells =
             List.map (\id -> { id = id, color = "#ff00ff" }) [0..(cols * rows - 1)]
     in
-        { boardInfo = boardInfo
+        { board = board
         , cells = cells
         }
 
@@ -56,7 +56,7 @@ main =
         Html.program
             { init = ( model, Cmd.none )
             , update = update
-            , view = view (Cell.view model.boardInfo)
+            , view = view (Cell.view model.board)
             , subscriptions = always Sub.none
             }
 
@@ -70,9 +70,8 @@ view : (Cell.Model -> Svg Msg) -> Model -> Html Msg
 view cellView model =
     div []
         [ Svg.svg
-            [ width (toString model.boardInfo.width)
-            , height (toString model.boardInfo.height)
+            [ width (toString model.board.width)
+            , height (toString model.board.height)
             ]
             (List.map cellView model.cells)
         ]
-
