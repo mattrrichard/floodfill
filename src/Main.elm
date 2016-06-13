@@ -36,7 +36,7 @@ main =
             Color.rgb 0 150 136
 
         red =
-            Color.rgb 244 67 54
+            Color.rgb 183 28 28
 
         yellow =
             Color.rgb 255 235 59
