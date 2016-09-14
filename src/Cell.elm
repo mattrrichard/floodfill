@@ -6,7 +6,6 @@ import Color.Convert exposing (..)
 import Svg exposing (..)
 import Svg.Attributes as Svg exposing (width, height, fill, stroke, strokeWidth)
 
-
 type alias Model =
     { id : Int
     , color : Color
@@ -15,6 +14,8 @@ type alias Model =
     , x : Int
     , y : Int
     }
+
+type Msg = Click
 
 
 init : Board.Config -> Int -> Color -> Model

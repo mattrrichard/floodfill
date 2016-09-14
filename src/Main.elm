@@ -7,11 +7,13 @@ import Color exposing (Color)
 import Html exposing (..)
 import Html.App as Html
 import Html.Events as Html
+import Html.Attributes exposing (value)
 import Random
 import Random.Array
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Svg.Events as Svg
+import DisjointSet.DisjointSet as DSet exposing (DisjointSet)
+import DisjointSet.Computation as DSC
 
 
 type alias Config =
@@ -66,6 +68,8 @@ main =
 type alias Model =
     { board : Board.Config
     , cells : List Cell.Model
+    , colors : List Color
+    , sets : DisjointSet
     }
 
 
@@ -73,11 +77,13 @@ emptyModel : Model
 emptyModel =
     { board = Board.init 0 0 0 0
     , cells = []
+    , colors = []
+    , sets = DSet.init 0
     }
-
 
 type Msg
     = NewBoard Model
+    | ChangeTopleftColor Color
 
 
 init : Config -> Random.Generator Model
@@ -101,6 +107,8 @@ init config =
         model cells =
             { board = board
             , cells = cells
+            , colors = config.colors
+            , sets = DSet.init numCells
             }
     in
         Random.map model cellsGen
@@ -114,17 +122,68 @@ randomColor colors =
 
         gen =
             Random.Array.sample arr
-
-        unwrap c =
-            case c of
-                Just color ->
-                    color
-
-                --should never happen. using black to make it stand out
-                Nothing ->
-                    Color.black
     in
-        Random.map unwrap gen
+        gen |> Random.map (Maybe.withDefault Color.black)
+
+colorTopLeftCells : Color -> List Cell.Model -> DSC.Computation (List Cell.Model)
+colorTopLeftCells newColor cells =
+    let
+
+        colorCell target cell =
+            DSC.find cell.id |> DSC.map (\set ->
+                if target == set then
+                    { cell | color = newColor }
+                else
+                    cell)
+
+        colorCells target =
+            DSC.mapM (colorCell target) cells
+
+        getTargetSet =
+            DSC.find 0
+    in
+        getTargetSet `DSC.andThen` colorCells
+
+
+connectCellsByColor : Board.Config -> List Cell.Model -> DSC.Computation (List Cell.Model)
+connectCellsByColor { cols } cells=
+    let
+        connect cell neighbor =
+            if cell.color == neighbor.color then
+                DSC.union cell.id neighbor.id
+            else
+                DSC.return ()
+
+        rows =
+            partition cols cells
+
+
+        northSouth =
+            List.map2 connect cells (List.drop cols cells)
+
+        eastWest =
+            rows
+                |> List.map (\row -> List.map2 connect row (List.drop 1 row))
+                |> List.concat
+    in
+        DSC.sequence northSouth
+            `DSC.andThen` \_ -> DSC.sequence eastWest
+            |> DSC.map (always cells)
+
+
+partition : Int -> List a -> List (List a)
+partition n xs =
+    let
+        (left, right) =
+            (List.take n xs, List.drop n xs)
+    in
+        case right of
+            [] ->
+                [left]
+
+            _ ->
+                left :: partition n right
+
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -132,6 +191,19 @@ update msg model =
     case msg of
         NewBoard newModel ->
             newModel ! []
+
+        ChangeTopleftColor newColor ->
+            let
+                (cells', sets') =
+                    DSC.eval' model.sets <|
+                        colorTopLeftCells newColor model.cells
+                            `DSC.andThen` (connectCellsByColor model.board)
+
+                model' =
+                    { model | cells = cells'
+                            , sets = sets' }
+            in
+                model' ! []
 
 
 view : Model -> Html Msg
@@ -142,4 +214,18 @@ view model =
             , height (toString model.board.height)
             ]
             (List.map (Cell.view model.board) model.cells)
+        , ul []
+            (List.map colorButton model.colors)
         ]
+
+
+colorButton : Color -> Html Msg
+colorButton color =
+    li []
+    [ input
+        [ type' "button"
+        , value "color button"
+        , Html.onClick <| ChangeTopleftColor color
+        ]
+        []
+    ]
