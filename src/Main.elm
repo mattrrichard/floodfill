@@ -59,7 +59,7 @@ main =
     in
         Html.program
             { init = ( model, startupCmd )
-            , update = update
+            , update = update startupCmd
             , view = view
             , subscriptions = always Sub.none
             }
@@ -84,6 +84,7 @@ emptyModel =
 type Msg
     = NewBoard Model
     | ChangeTopleftColor Color
+    | Restart
 
 
 init : Config -> Random.Generator Model
@@ -186,11 +187,14 @@ partition n xs =
 
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Cmd Msg -> Msg -> Model -> ( Model, Cmd Msg )
+update restartCmd msg model =
     case msg of
         NewBoard newModel ->
             newModel ! []
+
+        Restart ->
+            ( model, restartCmd )
 
         ChangeTopleftColor newColor ->
             let
@@ -216,6 +220,14 @@ view model =
             (List.map (Cell.view model.board) model.cells)
         , ul []
             (List.map colorButton model.colors)
+        , div []
+            [ input
+                  [ type' "button"
+                  , value "restart"
+                  , Html.onClick Restart
+                  ]
+                  []
+            ]
         ]
 
 
