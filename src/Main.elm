@@ -70,6 +70,7 @@ type alias Model =
     , cells : List Cell.Model
     , colors : List Color
     , sets : DisjointSet
+    , won : Bool
     }
 
 
@@ -79,6 +80,7 @@ emptyModel =
     , cells = []
     , colors = []
     , sets = DSet.init 0
+    , won = False
     }
 
 type Msg
@@ -110,6 +112,7 @@ init config =
             , cells = cells
             , colors = config.colors
             , sets = DSet.init numCells
+            , won = False
             }
     in
         Random.map model cellsGen
@@ -146,6 +149,17 @@ colorTopLeftCells newColor cells =
         getTargetSet `DSC.andThen` colorCells
 
 
+testVictory : List Cell.Model -> Int -> DSC.Computation Bool
+testVictory cells targetSet =
+    case cells of
+        x :: xs ->
+            DSC.find x.id `DSC.andThen` \set ->
+                if set == targetSet then
+                    testVictory xs targetSet
+                else
+                    DSC.return False
+        _ ->
+            DSC.return True
 connectCellsByColor : Board.Config -> List Cell.Model -> DSC.Computation (List Cell.Model)
 connectCellsByColor { cols } cells=
     let
@@ -213,7 +227,9 @@ update restartCmd msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Svg.svg
+        [ div []
+              [ Html.text <| if model.won then "You win" else "Keep trying!" ]
+        , Svg.svg
             [ width (toString model.board.width)
             , height (toString model.board.height)
             ]
