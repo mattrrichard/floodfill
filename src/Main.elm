@@ -160,6 +160,8 @@ testVictory cells targetSet =
                     DSC.return False
         _ ->
             DSC.return True
+
+
 connectCellsByColor : Board.Config -> List Cell.Model -> DSC.Computation (List Cell.Model)
 connectCellsByColor { cols } cells=
     let
@@ -212,14 +214,28 @@ update restartCmd msg model =
 
         ChangeTopleftColor newColor ->
             let
-                (cells', sets') =
-                    DSC.eval' model.sets <|
-                        colorTopLeftCells newColor model.cells
-                            `DSC.andThen` (connectCellsByColor model.board)
+
+                updateColor =
+                    colorTopLeftCells newColor model.cells
+
+                updateConnections cells =
+                    connectCellsByColor model.board cells
+
+                checkVictory cells =
+                    DSC.find 0
+                    |> DSC.andThen' (testVictory cells)
+                    |> DSC.map ((,) cells)
+
+                ((cells', victory), sets') =
+                    updateColor
+                    |> DSC.andThen' updateConnections
+                    |> DSC.andThen' checkVictory
+                    |> DSC.eval' model.sets
 
                 model' =
                     { model | cells = cells'
-                            , sets = sets' }
+                            , sets = sets'
+                            , won = victory }
             in
                 model' ! []
 
