@@ -1,4 +1,4 @@
-module DisjointSet.Computation exposing (Computation, find, union, return, andThen, eval, eval', mapM, sequence, map)
+module DisjointSet.Computation exposing (Computation, find, union, return, andThen, andThen', eval, eval', mapM, sequence, map)
 {-| Composable "Computation" objects that handle threading the updated DisjointSet object for you.
 
 # Definition
@@ -51,6 +51,7 @@ andThen (State s) k =
             in
                 k' set'
 
+andThen' = flip andThen
 
 {-| -}
 return : a -> Computation a
