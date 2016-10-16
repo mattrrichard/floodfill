@@ -7,13 +7,16 @@ import Color exposing (Color)
 import Html exposing (..)
 import Html.App as Html
 import Html.Events as Html
-import Html.Attributes exposing (value)
+import Html.Events.Extra as Html
+import Html.Attributes as Html exposing (value)
 import Random
 import Random.Array
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import DisjointSet as DSet exposing (DisjointSet)
 import DisjointSet.Computation as DSC
+import Time exposing (Time)
+import Json.Decode as Json
 
 
 type alias Config =
@@ -51,18 +54,27 @@ main =
             , colors = [ purple, blue, teal, red, yellow ]
             }
 
-        model =
-            emptyModel
-
         startupCmd =
-            Random.generate NewBoard (init config)
+            Random.generate NewBoard (init config emptyModel)
+
+        discoCmd =
+            Random.generate NewBoard << init config
+
     in
         Html.program
-            { init = ( model, startupCmd )
-            , update = update startupCmd
+            { init = ( emptyModel, startupCmd )
+            , update = update startupCmd discoCmd
             , view = view
-            , subscriptions = always Sub.none
+            , subscriptions = subscriptions
             }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if model.disco then
+        Time.every (model.discoTickDuration * Time.millisecond) (always DiscoTick)
+    else
+        Sub.none
 
 
 type alias Model =
@@ -71,6 +83,8 @@ type alias Model =
     , colors : List Color
     , sets : DisjointSet
     , won : Bool
+    , disco : Bool
+    , discoTickDuration : Float
     }
 
 
@@ -81,16 +95,21 @@ emptyModel =
     , colors = []
     , sets = DSet.init 0
     , won = False
+    , disco = False
+    , discoTickDuration = 50
     }
 
 type Msg
     = NewBoard Model
     | ChangeTopleftColor Color
     | Restart
+    | DiscoToggle
+    | DiscoTick
+    | ChangeTickDuration Float
 
 
-init : Config -> Random.Generator Model
-init config =
+init : Config -> Model -> Random.Generator Model
+init config model =
     let
         board =
             Board.init config.rows config.cols config.cellSize config.borderSize
@@ -107,15 +126,17 @@ init config =
         cellsGen =
             Random.map (List.map2 (Cell.init board) ids) colorsGen
 
-        model cells =
+        newModelFactory cells =
             { board = board
             , cells = cells
             , colors = config.colors
             , sets = DSet.init numCells
             , won = False
+            , disco = model.disco
+            , discoTickDuration = model.discoTickDuration
             }
     in
-        Random.map model cellsGen
+        Random.map newModelFactory cellsGen
 
 
 randomColor : List Color -> Random.Generator Color
@@ -132,13 +153,13 @@ randomColor colors =
 colorTopLeftCells : Color -> List Cell.Model -> DSC.Computation (List Cell.Model)
 colorTopLeftCells newColor cells =
     let
-
         colorCell target cell =
-            DSC.find cell.id |> DSC.map (\set ->
-                if target == set then
-                    { cell | color = newColor }
-                else
-                    cell)
+            DSC.find cell.id
+                |> DSC.map (\set ->
+                    if target == set then
+                        { cell | color = newColor }
+                    else
+                        cell)
 
         colorCells target =
             DSC.mapM (colorCell target) cells
@@ -146,11 +167,12 @@ colorTopLeftCells newColor cells =
         getTargetSet =
             DSC.find 0
     in
-        getTargetSet `DSC.andThen` colorCells
+        getTargetSet
+        |> DSC.andThen colorCells
 
 
-testVictory : List Cell.Model -> Int -> DSC.Computation Bool
-testVictory cells targetSet =
+testVictory : List (Cell.Model) -> Bool
+testVictory cells =
     case cells of
         x :: xs ->
             xs
@@ -172,7 +194,6 @@ connectCellsByColor { cols } cells=
 
         rows =
             partition cols cells
-
 
         northSouth =
             List.map2 connect cells (List.drop cols cells)
@@ -203,9 +224,8 @@ partition n xs =
                 left :: partition n right
 
 
-
-update : Cmd Msg -> Msg -> Model -> ( Model, Cmd Msg )
-update restartCmd msg model =
+update : Cmd Msg -> (Model -> Cmd Msg) -> Msg -> Model -> ( Model, Cmd Msg )
+update restartCmd discoCmd msg model =
     case msg of
         NewBoard newModel ->
             newModel ! []
@@ -215,7 +235,6 @@ update restartCmd msg model =
 
         ChangeTopleftColor newColor ->
             let
-
                 updateColor =
                     colorTopLeftCells newColor model.cells
 
@@ -233,6 +252,16 @@ update restartCmd msg model =
                             , won = testVictory cells' }
             in
                 model' ! []
+
+        DiscoToggle ->
+            { model | disco = not model.disco } ! []
+
+        DiscoTick ->
+            (model, discoCmd model)
+
+        ChangeTickDuration tick ->
+            { model | discoTickDuration = tick } ! []
+
 
 
 view : Model -> Html Msg
@@ -254,8 +283,35 @@ view model =
                   , Html.onClick Restart
                   ]
                   []
+            , input
+                  [ type' "button"
+                  , value "disco"
+                  , Html.onClick DiscoToggle
+                  ]
+                  []
             ]
+        , div []
+            (if model.disco then
+                [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
+                , (Html.text <| toString <| model.discoTickDuration)
+                ]
+            else
+                []
+            )
         ]
+
+
+sliderInput : Int -> Int -> Int -> Float -> (Float -> Msg) -> Html Msg
+sliderInput minValue maxValue stepSize val msg =
+    input
+        [ type' "range"
+        , Html.min <| toString minValue
+        , Html.max <| toString maxValue
+        , Html.step <| toString stepSize
+        , Html.value <| toString val
+        , Html.on "input" (Json.map msg Html.targetValueFloat)
+        ]
+        []
 
 
 colorButton : Color -> Html Msg
