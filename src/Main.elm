@@ -153,13 +153,12 @@ testVictory : List Cell.Model -> Int -> DSC.Computation Bool
 testVictory cells targetSet =
     case cells of
         x :: xs ->
-            DSC.find x.id `DSC.andThen` \set ->
-                if set == targetSet then
-                    testVictory xs targetSet
-                else
-                    DSC.return False
+            xs
+            |> List.map .color
+            |> List.all ((==) x.color)
+
         _ ->
-            DSC.return True
+            True
 
 
 connectCellsByColor : Board.Config -> List Cell.Model -> DSC.Computation (List Cell.Model)
@@ -223,21 +222,15 @@ update restartCmd msg model =
                 updateConnections cells =
                     connectCellsByColor model.board cells
 
-                checkVictory cells =
-                    DSC.find 0
-                    |> DSC.andThen' (testVictory cells)
-                    |> DSC.map ((,) cells)
-
-                ((cells', victory), sets') =
+                (cells', sets') =
                     updateColor
-                    |> DSC.andThen' updateConnections
-                    |> DSC.andThen' checkVictory
+                    |> DSC.andThen updateConnections
                     |> DSC.eval' model.sets
 
                 model' =
                     { model | cells = cells'
                             , sets = sets'
-                            , won = victory }
+                            , won = testVictory cells' }
             in
                 model' ! []
 
