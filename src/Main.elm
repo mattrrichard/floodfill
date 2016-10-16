@@ -244,19 +244,19 @@ update restartCmd discoCmd msg model =
                 updateConnections cells =
                     connectCellsByColor model.board cells
 
-                ( cells', sets' ) =
+                ( cells, sets ) =
                     updateColor
                         |> DSC.andThen updateConnections
-                        |> DSC.eval' model.sets
+                        |> DSC.eval model.sets
 
-                model' =
+                newModel =
                     { model
-                        | cells = cells'
-                        , sets = sets'
-                        , won = testVictory cells'
+                        | cells = cells
+                        , sets = sets
+                        , won = testVictory cells
                     }
             in
-                model' ! []
+                newModel ! []
 
         DiscoToggle ->
             { model | disco = not model.disco } ! []
