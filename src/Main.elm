@@ -12,7 +12,7 @@ import Random
 import Random.Array
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import DisjointSet.DisjointSet as DSet exposing (DisjointSet)
+import DisjointSet as DSet exposing (DisjointSet)
 import DisjointSet.Computation as DSC
 
 
@@ -177,15 +177,17 @@ connectCellsByColor { cols } cells=
 
         northSouth =
             List.map2 connect cells (List.drop cols cells)
+                |> DSC.sequence
 
         eastWest =
             rows
                 |> List.map (\row -> List.map2 connect row (List.drop 1 row))
                 |> List.concat
+                |> DSC.sequence
     in
-        DSC.sequence northSouth
-            `DSC.andThen` \_ -> DSC.sequence eastWest
-            |> DSC.map (always cells)
+        northSouth
+        |> DSC.andThen (always eastWest)
+        |> DSC.map (always cells)
 
 
 partition : Int -> List a -> List (List a)
