@@ -59,7 +59,6 @@ main =
 
         discoCmd =
             Random.generate NewBoard << init config
-
     in
         Html.program
             { init = ( emptyModel, startupCmd )
@@ -98,6 +97,7 @@ emptyModel =
     , disco = False
     , discoTickDuration = 50
     }
+
 
 type Msg
     = NewBoard Model
@@ -150,16 +150,19 @@ randomColor colors =
     in
         gen |> Random.map (Maybe.withDefault Color.black)
 
+
 colorTopLeftCells : Color -> List Cell.Model -> DSC.Computation (List Cell.Model)
 colorTopLeftCells newColor cells =
     let
         colorCell target cell =
             DSC.find cell.id
-                |> DSC.map (\set ->
-                    if target == set then
-                        { cell | color = newColor }
-                    else
-                        cell)
+                |> DSC.map
+                    (\set ->
+                        if target == set then
+                            { cell | color = newColor }
+                        else
+                            cell
+                    )
 
         colorCells target =
             DSC.mapM (colorCell target) cells
@@ -168,7 +171,7 @@ colorTopLeftCells newColor cells =
             DSC.find 0
     in
         getTargetSet
-        |> DSC.andThen colorCells
+            |> DSC.andThen colorCells
 
 
 testVictory : List (Cell.Model) -> Bool
@@ -176,15 +179,15 @@ testVictory cells =
     case cells of
         x :: xs ->
             xs
-            |> List.map .color
-            |> List.all ((==) x.color)
+                |> List.map .color
+                |> List.all ((==) x.color)
 
         _ ->
             True
 
 
 connectCellsByColor : Board.Config -> List Cell.Model -> DSC.Computation (List Cell.Model)
-connectCellsByColor { cols } cells=
+connectCellsByColor { cols } cells =
     let
         connect cell neighbor =
             if cell.color == neighbor.color then
@@ -206,19 +209,19 @@ connectCellsByColor { cols } cells=
                 |> DSC.sequence
     in
         northSouth
-        |> DSC.andThen (always eastWest)
-        |> DSC.map (always cells)
+            |> DSC.andThen (always eastWest)
+            |> DSC.map (always cells)
 
 
 partition : Int -> List a -> List (List a)
 partition n xs =
     let
-        (left, right) =
-            (List.take n xs, List.drop n xs)
+        ( left, right ) =
+            ( List.take n xs, List.drop n xs )
     in
         case right of
             [] ->
-                [left]
+                [ left ]
 
             _ ->
                 left :: partition n right
@@ -241,15 +244,17 @@ update restartCmd discoCmd msg model =
                 updateConnections cells =
                     connectCellsByColor model.board cells
 
-                (cells', sets') =
+                ( cells', sets' ) =
                     updateColor
-                    |> DSC.andThen updateConnections
-                    |> DSC.eval' model.sets
+                        |> DSC.andThen updateConnections
+                        |> DSC.eval' model.sets
 
                 model' =
-                    { model | cells = cells'
-                            , sets = sets'
-                            , won = testVictory cells' }
+                    { model
+                        | cells = cells'
+                        , sets = sets'
+                        , won = testVictory cells'
+                    }
             in
                 model' ! []
 
@@ -257,18 +262,22 @@ update restartCmd discoCmd msg model =
             { model | disco = not model.disco } ! []
 
         DiscoTick ->
-            (model, discoCmd model)
+            ( model, discoCmd model )
 
         ChangeTickDuration tick ->
             { model | discoTickDuration = tick } ! []
-
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ div []
-              [ Html.text <| if model.won then "You win" else "Keep trying!" ]
+            [ Html.text
+                <| if model.won then
+                    "You win"
+                   else
+                    "Keep trying!"
+            ]
         , Svg.svg
             [ width (toString model.board.width)
             , height (toString model.board.height)
@@ -278,24 +287,24 @@ view model =
             (List.map colorButton model.colors)
         , div []
             [ input
-                  [ type' "button"
-                  , value "restart"
-                  , Html.onClick Restart
-                  ]
-                  []
+                [ type' "button"
+                , value "restart"
+                , Html.onClick Restart
+                ]
+                []
             , input
-                  [ type' "button"
-                  , value "disco"
-                  , Html.onClick DiscoToggle
-                  ]
-                  []
+                [ type' "button"
+                , value "disco"
+                , Html.onClick DiscoToggle
+                ]
+                []
             ]
         , div []
             (if model.disco then
                 [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
                 , (Html.text <| toString <| model.discoTickDuration)
                 ]
-            else
+             else
                 []
             )
         ]
@@ -317,10 +326,10 @@ sliderInput minValue maxValue stepSize val msg =
 colorButton : Color -> Html Msg
 colorButton color =
     li []
-    [ input
-        [ type' "button"
-        , value "color button"
-        , Html.onClick <| ChangeTopleftColor color
+        [ input
+            [ type' "button"
+            , value "color button"
+            , Html.onClick <| ChangeTopleftColor color
+            ]
+            []
         ]
-        []
-    ]
