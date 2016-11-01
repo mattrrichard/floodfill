@@ -1,10 +1,10 @@
 {
     "version": "1.0.0",
     "summary": "Puzzle game where the objective is to make the whole board a single color",
-    "repository": "https://github.com/user/project.git",
+    "repository": "https://github.com/mattrrichard/floodfill",
     "license": "BSD3",
     "source-directories": [
-        "src", "../unionfind/src"
+        "src"
     ],
     "exposed-modules": [],
     "dependencies": {
@@ -12,8 +12,10 @@
         "elm-community/random-extra": "1.0.0 <= v < 2.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
         "elm-lang/html": "1.1.0 <= v < 2.0.0",
+        "elm-lang/keyboard": "1.0.0 <= v < 2.0.0",
         "elm-lang/svg": "1.1.0 <= v < 2.0.0",
-        "eskimoblood/elm-color-extra": "3.0.2 <= v < 4.0.0"
+        "eskimoblood/elm-color-extra": "3.0.2 <= v < 4.0.0",
+        "mattrrichard/elm-disjoint-set": "1.0.0 <= v < 2.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0"
 }
