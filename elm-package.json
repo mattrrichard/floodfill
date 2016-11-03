@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Puzzle game where the objective is to make the whole board a single color",
-    "repository": "https://github.com/mattrrichard/floodfill",
+    "repository": "https://github.com/mattrrichard/floodfill.git",
     "license": "BSD3",
     "source-directories": [
         "src"
