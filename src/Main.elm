@@ -103,16 +103,6 @@ emptyModel =
     }
 
 
-type Msg
-    = NewBoard Model
-    | ChangeTopleftColor Color
-    | Restart
-    | DiscoToggle
-    | DiscoTick
-    | ChangeTickDuration Float
-    | KeyPress Int
-
-
 init : Config -> Model -> Random.Generator Model
 init config model =
     let
@@ -155,6 +145,68 @@ randomColor colors =
             Random.Array.sample arr
     in
         gen |> Random.map (Maybe.withDefault Color.black)
+
+
+type Msg
+    = NewBoard Model
+    | ChangeTopleftColor Color
+    | Restart
+    | DiscoToggle
+    | DiscoTick
+    | ChangeTickDuration Float
+    | KeyPress Int
+
+
+update : Cmd Msg -> (Model -> Cmd Msg) -> Msg -> Model -> ( Model, Cmd Msg )
+update restartCmd discoCmd msg model =
+    case msg of
+        NewBoard newModel ->
+            newModel ! []
+
+        Restart ->
+            ( model, restartCmd )
+
+        ChangeTopleftColor newColor ->
+            let
+                updateColor =
+                    colorTopLeftCells newColor model.cells
+
+                updateConnections cells =
+                    connectCellsByColor model.board cells
+
+                ( cells, sets ) =
+                    updateColor
+                        |> DSC.andThen updateConnections
+                        |> DSC.eval model.sets
+
+                newModel =
+                    { model
+                        | cells = cells
+                        , sets = sets
+                        , won = testVictory cells
+                    }
+            in
+                newModel ! []
+
+        DiscoToggle ->
+            { model | disco = not model.disco } ! []
+
+        DiscoTick ->
+            ( model, discoCmd model )
+
+        ChangeTickDuration tick ->
+            { model | discoTickDuration = tick } ! []
+
+        KeyPress code ->
+            let
+                ( codeState, triggered ) =
+                    Code.update code model.codeState
+            in
+                { model
+                    | codeState = codeState
+                    , disco = model.disco || triggered
+                }
+                    ! []
 
 
 colorTopLeftCells : Color -> List Cell.Model -> DSC.Computation (List Cell.Model)
@@ -231,58 +283,6 @@ partition n xs =
 
             _ ->
                 left :: partition n right
-
-
-update : Cmd Msg -> (Model -> Cmd Msg) -> Msg -> Model -> ( Model, Cmd Msg )
-update restartCmd discoCmd msg model =
-    case msg of
-        NewBoard newModel ->
-            newModel ! []
-
-        Restart ->
-            ( model, restartCmd )
-
-        ChangeTopleftColor newColor ->
-            let
-                updateColor =
-                    colorTopLeftCells newColor model.cells
-
-                updateConnections cells =
-                    connectCellsByColor model.board cells
-
-                ( cells, sets ) =
-                    updateColor
-                        |> DSC.andThen updateConnections
-                        |> DSC.eval model.sets
-
-                newModel =
-                    { model
-                        | cells = cells
-                        , sets = sets
-                        , won = testVictory cells
-                    }
-            in
-                newModel ! []
-
-        DiscoToggle ->
-            { model | disco = not model.disco } ! []
-
-        DiscoTick ->
-            ( model, discoCmd model )
-
-        ChangeTickDuration tick ->
-            { model | discoTickDuration = tick } ! []
-
-        KeyPress code ->
-            let
-                ( codeState, triggered ) =
-                    Code.update code model.codeState
-            in
-                { model
-                    | codeState = codeState
-                    , disco = model.disco || triggered
-                }
-                    ! []
 
 
 view : Model -> Html Msg
