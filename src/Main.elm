@@ -17,6 +17,8 @@ import DisjointSet as DSet exposing (DisjointSet)
 import DisjointSet.Computation as DSC
 import Time exposing (Time)
 import Json.Decode as Json
+import Keyboard
+import Konami as Code
 
 
 type alias Config =
@@ -73,7 +75,7 @@ subscriptions model =
     if model.disco then
         Time.every (model.discoTickDuration * Time.millisecond) (always DiscoTick)
     else
-        Sub.none
+        Keyboard.downs KeyPress
 
 
 type alias Model =
@@ -84,6 +86,7 @@ type alias Model =
     , won : Bool
     , disco : Bool
     , discoTickDuration : Float
+    , codeState : Code.State
     }
 
 
@@ -96,6 +99,7 @@ emptyModel =
     , won = False
     , disco = False
     , discoTickDuration = 50
+    , codeState = Code.init
     }
 
 
@@ -106,6 +110,7 @@ type Msg
     | DiscoToggle
     | DiscoTick
     | ChangeTickDuration Float
+    | KeyPress Int
 
 
 init : Config -> Model -> Random.Generator Model
@@ -134,6 +139,7 @@ init config model =
             , won = False
             , disco = model.disco
             , discoTickDuration = model.discoTickDuration
+            , codeState = Code.init
             }
     in
         Random.map newModelFactory cellsGen
@@ -267,13 +273,26 @@ update restartCmd discoCmd msg model =
         ChangeTickDuration tick ->
             { model | discoTickDuration = tick } ! []
 
+        KeyPress code ->
+            let
+                ( codeState, triggered ) =
+                    Code.update code model.codeState
+            in
+                { model
+                    | codeState = codeState
+                    , disco = model.disco || triggered
+                }
+                    ! []
+
 
 view : Model -> Html Msg
 view model =
     div []
         [ div []
             [ Html.text
-                <| if model.won then
+                <| if model.disco then
+                    ""
+                   else if model.won then
                     "You win"
                    else
                     "Keep trying!"
@@ -283,8 +302,18 @@ view model =
             , height (toString model.board.height)
             ]
             (List.map (Cell.view model.board) model.cells)
-        , ul []
-            (List.map colorButton model.colors)
+        , if not model.disco then
+            ul []
+                (List.map colorButton model.colors)
+          else
+            div []
+                (if model.disco then
+                    [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
+                    , (Html.text <| toString <| model.discoTickDuration)
+                    ]
+                 else
+                    []
+                )
         , div []
             [ input
                 [ type' "button"
@@ -292,21 +321,7 @@ view model =
                 , Html.onClick Restart
                 ]
                 []
-            , input
-                [ type' "button"
-                , value "disco"
-                , Html.onClick DiscoToggle
-                ]
-                []
             ]
-        , div []
-            (if model.disco then
-                [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
-                , (Html.text <| toString <| model.discoTickDuration)
-                ]
-             else
-                []
-            )
         ]
 
 
