@@ -1,4 +1,4 @@
-module Styles exposing (..)
+module Style exposing (..)
 
 import Css exposing (..)
 import Color

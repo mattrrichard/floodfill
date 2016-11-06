@@ -16,7 +16,7 @@ import Keyboard
 import Konami as Code
 import Random
 import Random.Array
-import Styles as Style
+import Style
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time exposing (Time)
