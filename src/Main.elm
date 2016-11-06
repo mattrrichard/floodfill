@@ -4,21 +4,21 @@ import Array
 import Board
 import Cell
 import Color exposing (Color)
+import DisjointSet as DSet exposing (DisjointSet)
+import DisjointSet.Computation as DSC
 import Html exposing (..)
 import Html.App as Html
+import Html.Attributes as Html exposing (value)
 import Html.Events as Html
 import Html.Events.Extra as Html
-import Html.Attributes as Html exposing (value)
+import Json.Decode as Json
+import Keyboard
+import Konami as Code
 import Random
 import Random.Array
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import DisjointSet as DSet exposing (DisjointSet)
-import DisjointSet.Computation as DSC
 import Time exposing (Time)
-import Json.Decode as Json
-import Keyboard
-import Konami as Code
 
 
 type alias Config =
