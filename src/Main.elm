@@ -151,7 +151,6 @@ type Msg
     = NewBoard Model
     | ChangeTopleftColor Color
     | Restart
-    | DiscoToggle
     | DiscoTick
     | ChangeTickDuration Float
     | KeyPress Int
@@ -187,9 +186,6 @@ update restartCmd discoCmd msg model =
                     }
             in
                 newModel ! []
-
-        DiscoToggle ->
-            { model | disco = not model.disco } ! []
 
         DiscoTick ->
             ( model, discoCmd model )
