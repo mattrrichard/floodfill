@@ -16,6 +16,7 @@ import Keyboard
 import Konami as Code
 import Random
 import Random.Array
+import Styles as Style
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time exposing (Time)
@@ -33,27 +34,12 @@ type alias Config =
 main : Program Never
 main =
     let
-        purple =
-            Color.rgb 156 39 176
-
-        blue =
-            Color.rgb 33 150 243
-
-        teal =
-            Color.rgb 0 150 136
-
-        red =
-            Color.rgb 183 28 28
-
-        yellow =
-            Color.rgb 255 235 59
-
         config =
             { rows = 16
             , cols = 16
             , cellSize = 24
             , borderSize = 2
-            , colors = [ purple, blue, teal, red, yellow ]
+            , colors = Style.colors |> List.map Style.toColor
             }
 
         startupCmd =
