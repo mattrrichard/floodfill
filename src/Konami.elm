@@ -59,6 +59,6 @@ update keyCode (State state) =
         key ->
             let
                 newState =
-                    List.take 11 (key :: state)
+                    List.take 10 (key :: state)
             in
                 ( State newState, newState == goalState )
