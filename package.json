@@ -1,0 +1,25 @@
+{
+  "name": "floodfill",
+  "version": "1.0.0",
+  "description": "simple puzzle game in elm",
+  "main": "index.html",
+  "dependencies": {},
+  "devDependencies": {
+    "elm-webpack-loader": "^3.0.6",
+    "html-webpack-plugin": "^2.24.1",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
+  },
+  "scripts": {
+    "start": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattrrichard/floodfill.git"
+  },
+  "author": "Matt Richard",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/mattrrichard/floodfill/issues"
+  }
+}

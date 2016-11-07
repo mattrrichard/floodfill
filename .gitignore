@@ -1,3 +1,6 @@
 elm-stuff/
 elm.js
 TAGS
+node_modules/
+dist/
+npm-debug.log
