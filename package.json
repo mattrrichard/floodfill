@@ -5,13 +5,14 @@
   "main": "index.html",
   "dependencies": {},
   "devDependencies": {
+    "elm-hot-loader": "^0.3.4",
     "elm-webpack-loader": "^3.0.6",
     "html-webpack-plugin": "^2.24.1",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"
   },
   "scripts": {
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server --hot"
   },
   "repository": {
     "type": "git",

@@ -49,7 +49,7 @@ main =
             Random.generate NewBoard << init config
     in
         Html.program
-            { init = ( emptyModel, startupCmd )
+            { init = ( emptyModel, Cmd.none )
             , update = update startupCmd discoCmd
             , view = view
             , subscriptions = subscriptions

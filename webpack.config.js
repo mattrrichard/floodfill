@@ -32,7 +32,7 @@ module.exports = {
         loaders: [{
             test: /\.elm$/,
             exclude: [/elm-stuff/, /node_modules/],
-            loader: 'elm-webpack?verbose=true&warn=true'
+            loader: 'elm-hot!elm-webpack?verbose=true&warn=true'
         }]
     }
 };
