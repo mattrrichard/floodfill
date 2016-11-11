@@ -28,10 +28,12 @@ type alias Config =
     , cellSize : Int
     , borderSize : Int
     , colors : List Color
+type alias Flags =
+    { hotSwapped : Bool
     }
 
 
-main : Program Never
+main : Program Flags
 main =
     let
         config =
@@ -47,9 +49,15 @@ main =
 
         discoCmd =
             Random.generate NewBoard << init config
+
+        initFlags flags =
+            if flags.hotSwapped then
+                ( emptyModel, Cmd.none )
+            else
+                ( emptyModel, startupCmd )
     in
-        Html.program
-            { init = ( emptyModel, Cmd.none )
+        Html.programWithFlags
+            { init = initFlags
             , update = update startupCmd discoCmd
             , view = view
             , subscriptions = subscriptions
