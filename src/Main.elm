@@ -3,7 +3,6 @@ module Main exposing (..)
 import Array
 import Board
 import Cell
-import Color exposing (Color)
 import DisjointSet as DSet exposing (DisjointSet)
 import DisjointSet.Computation as DSC
 import Html exposing (..)
@@ -16,7 +15,7 @@ import Keyboard
 import Konami as Code
 import Random
 import Random.Array
-import Style
+import Style exposing (GameColor)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time exposing (Time)
@@ -27,7 +26,9 @@ type alias Config =
     , cols : Int
     , cellSize : Int
     , borderSize : Int
-    , colors : List Color
+    , colors : List GameColor
+    }
+
 type alias Flags =
     { hotSwapped : Bool
     }
@@ -41,7 +42,7 @@ main =
             , cols = 16
             , cellSize = 24
             , borderSize = 2
-            , colors = Style.colors |> List.map Style.toColor
+            , colors = Style.colors
             }
 
         startupCmd =
@@ -75,7 +76,7 @@ subscriptions model =
 type alias Model =
     { board : Board.Config
     , cells : List Cell.Model
-    , colors : List Color
+    , colors : List GameColor
     , sets : DisjointSet
     , won : Bool
     , disco : Bool
@@ -129,7 +130,7 @@ init config model =
         Random.map newModelFactory cellsGen
 
 
-randomColor : List Color -> Random.Generator Color
+randomColor : List GameColor -> Random.Generator GameColor
 randomColor colors =
     let
         arr =
@@ -138,12 +139,12 @@ randomColor colors =
         gen =
             Random.Array.sample arr
     in
-        gen |> Random.map (Maybe.withDefault Color.black)
+        gen |> Random.map (Maybe.withDefault Style.Yellow)
 
 
 type Msg
     = NewBoard Model
-    | ChangeTopleftColor Color
+    | ChangeTopleftColor GameColor
     | Restart
     | DiscoTick
     | ChangeTickDuration Float
@@ -199,7 +200,7 @@ update restartCmd discoCmd msg model =
                     ! []
 
 
-colorTopLeftCells : Color -> List Cell.Model -> DSC.Computation (List Cell.Model)
+colorTopLeftCells : GameColor -> List Cell.Model -> DSC.Computation (List Cell.Model)
 colorTopLeftCells newColor cells =
     let
         colorCell target cell =
@@ -328,7 +329,7 @@ sliderInput minValue maxValue stepSize val msg =
         []
 
 
-colorButton : Color -> Html Msg
+colorButton : GameColor -> Html Msg
 colorButton color =
     li []
         [ input

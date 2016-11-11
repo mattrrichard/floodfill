@@ -3,13 +3,14 @@ module Cell exposing (Model, view, init)
 import Board
 import Color exposing (Color)
 import Color.Convert exposing (..)
+import Style
 import Svg exposing (..)
 import Svg.Attributes as Svg exposing (width, height, fill, stroke, strokeWidth)
 
 
 type alias Model =
     { id : Int
-    , color : Color
+    , color : Style.GameColor
     , row : Int
     , col : Int
     , x : Int
@@ -17,7 +18,7 @@ type alias Model =
     }
 
 
-init : Board.Config -> Int -> Color -> Model
+init : Board.Config -> Int -> Style.GameColor -> Model
 init board id color =
     let
         row =
@@ -48,7 +49,7 @@ view board cell =
         , Svg.y (toString cell.y)
         , width <| toString (board.cellSize + board.borderSize)
         , height <| toString (board.cellSize + board.borderSize)
-        , fill <| colorToHex cell.color
+        , fill <| colorToHex <| Style.toColor cell.color
         , stroke <| colorToHex Color.darkCharcoal
         , strokeWidth (toString board.borderSize)
         ]
