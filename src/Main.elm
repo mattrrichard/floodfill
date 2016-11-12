@@ -29,6 +29,7 @@ type alias Config =
     , colors : List GameColor
     }
 
+
 type alias Flags =
     { hotSwapped : Bool
     }
@@ -280,12 +281,12 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            [ Html.text
-                <| if model.disco then
+            [ Html.text <|
+                if model.disco then
                     ""
-                   else if model.won then
+                else if model.won then
                     "You win"
-                   else
+                else
                     "Keep trying!"
             ]
         , Svg.svg
