@@ -1,6 +1,7 @@
 module Style exposing (..)
 
 import Css exposing (..)
+import Css.Elements exposing (body)
 import Color
 
 
@@ -39,3 +40,10 @@ toColor label =
 colors : List GameColor
 colors =
     [ Purple, Blue, Teal, Red, Yellow ]
+
+
+css : Stylesheet
+css =
+    stylesheet
+        [ body [ backgroundColor (rgb 255 255 255) ]
+        ]
