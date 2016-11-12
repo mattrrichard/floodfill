@@ -31,8 +31,11 @@ module.exports = {
     module: {
         loaders: [{
             test: /\.elm$/,
-            exclude: [/elm-stuff/, /node_modules/],
+            exclude: [/elm-stuff/, /node_modules/, /Stylesheets.elm/],
             loader: 'elm-hot!elm-webpack?verbose=true&warn=true'
+        }, {
+            test: /src\/Stylesheets\.elm/,
+            loader: "style!css!elm-css-webpack"
         }]
     }
 };
