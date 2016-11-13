@@ -8,6 +8,7 @@ import DisjointSet.Computation as DSC
 import Html exposing (..)
 import Html.App as Html
 import Html.Attributes as Html exposing (value)
+import Html.CssHelpers as Html
 import Html.Events as Html
 import Html.Events.Extra as Html
 import Json.Decode as Json
@@ -294,25 +295,28 @@ view model =
             , height (toString model.board.height)
             ]
             (List.map (Cell.view model.board) model.cells)
-        , if not model.disco then
-            ul []
-                (List.map colorButton model.colors)
-          else
-            div []
-                (if model.disco then
-                    [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
-                    , (Html.text <| toString <| model.discoTickDuration)
+        , div [ class [ Style.Controls ] ]
+            [ if not model.disco then
+                ul []
+                    (List.map colorButton model.colors)
+              else
+                div []
+                    (if model.disco then
+                        [ sliderInput 10 200 5 model.discoTickDuration ChangeTickDuration
+                        , (Html.text <| toString <| model.discoTickDuration)
+                        ]
+                     else
+                        []
+                    )
+            , div []
+                [ input
+                    [ type' "button"
+                    , value "Restart"
+                    , class [ Style.Button, Style.ButtonDefault ]
+                    , Html.onClick Restart
                     ]
-                 else
                     []
-                )
-        , div []
-            [ input
-                [ type' "button"
-                , value "restart"
-                , Html.onClick Restart
                 ]
-                []
             ]
         ]
 
@@ -336,7 +340,12 @@ colorButton color =
         [ input
             [ type' "button"
             , value "color button"
+            , class [ Style.Button, Style.ColorButton color ]
             , Html.onClick <| ChangeTopleftColor color
             ]
             []
         ]
+
+
+{ id, class, classList } =
+    Style.helpers
