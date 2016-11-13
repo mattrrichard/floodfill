@@ -8,7 +8,6 @@ import DisjointSet.Computation as DSC
 import Html exposing (..)
 import Html.App as Html
 import Html.Attributes as Html exposing (value)
-import Html.CssHelpers as Html
 import Html.Events as Html
 import Html.Events.Extra as Html
 import Json.Decode as Json
@@ -164,15 +163,15 @@ update restartCmd discoCmd msg model =
 
         ChangeTopleftColor newColor ->
             let
-                updateColor =
-                    colorTopLeftCells newColor model.cells
+                updateColor cells =
+                    colorTopLeftCells newColor cells
 
                 updateConnections cells =
                     connectCellsByColor model.board cells
 
                 ( cells, sets ) =
-                    updateColor
-                        |> DSC.andThen updateConnections
+                    updateConnections model.cells
+                        |> DSC.andThen updateColor
                         |> DSC.eval model.sets
 
                 newModel =
