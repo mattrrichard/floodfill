@@ -4,6 +4,7 @@ import Css exposing (..)
 import Css.Elements exposing (li, ul)
 import Color
 import Html.CssHelpers
+import String
 
 
 type CssClasses
@@ -12,6 +13,7 @@ type CssClasses
     | ButtonDefault
     | ColorButton GameColor
     | Controls
+    | ColorButtonGroup
 
 
 type GameColor
@@ -20,6 +22,7 @@ type GameColor
     | Blue
     | Red
     | Yellow
+    | Orange
 
 
 helpers : Html.CssHelpers.Namespace String id class classList
@@ -45,6 +48,9 @@ toColor label =
         Yellow ->
             Color.rgb 255 235 59
 
+        Orange ->
+            Color.rgb 255 165 0
+
 
 toCssColor : GameColor -> Color
 toCssColor label =
@@ -57,7 +63,7 @@ toCssColor label =
 
 colors : List GameColor
 colors =
-    [ Purple, Blue, Teal, Red, Yellow ]
+    [ Purple, Blue, Teal, Yellow, Red, Orange ]
 
 
 css : Stylesheet
@@ -72,9 +78,22 @@ css =
             , cursor pointer
             , borderBottom3 (px 3) solid transparent
             , outline none
-            , margin (px 5)
+            , margin (px 2)
             , textShadow4 (px 0) (px 1) (px 1) (rgba 0 0 0 0.1)
-            , hover [ borderBottomColor (rgba 0 0 0 0.25) ]
+              -- TODO elm-css does not yet support multiple box shadows
+              -- , boxShadow5 (px 0) (px 2) (px 2) (px 0) (rgba 0 0 0 0.14)
+              -- , boxShadow5 (px 0) (px 3) (px 1) (px -2) (rgba 0 0 0 0.2)
+              -- , boxShadow5 (px 0) (px 1) (px 5) (px 0) (rgba 0 0 0 0.12)
+            , property "box-shadow"
+                (String.join ","
+                    [ "0 2px 2px 0 rgba(0, 0, 0, 0.14)"
+                    , "0 3px 1px -2px rgba(0, 0, 0, 0.2)"
+                    , "0 1px 5px 0px rgba(0, 0, 0, 0.12)"
+                    ]
+                )
+            , hover
+                [ borderBottomColor (rgba 0 0 0 0.25)
+                ]
             , active
                 [ boxShadow5 inset (px 0) (px 2) (px 6) (rgba 0 0 0 0.35)
                 , borderBottomColor transparent
@@ -93,12 +112,16 @@ css =
             ]
         , (.) Controls
             [ float left
+            ]
+        , (.) ColorButtonGroup
+            [ width (px 85)
+            , overflow hidden
+            , paddingLeft (px 0)
             , descendants
                 [ li
-                    [ listStyleType none
+                    [ float left
+                    , listStyleType none
                     ]
-                , ul
-                    [ paddingLeft (px 0) ]
                 ]
             ]
         ]
@@ -107,4 +130,7 @@ css =
 
 colorButtonStyle : GameColor -> Snippet
 colorButtonStyle color =
-    ColorButton color . [ backgroundColor (toCssColor color) ]
+    (.) (ColorButton color)
+        [ backgroundColor (toCssColor color)
+        , width (px 35)
+        ]

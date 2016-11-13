@@ -281,23 +281,9 @@ partition n xs =
 view : Model -> Html Msg
 view model =
     div []
-        [ div []
-            [ Html.text <|
-                if model.disco then
-                    ""
-                else if model.won then
-                    "You win"
-                else
-                    "Keep trying!"
-            ]
-        , Svg.svg
-            [ width (toString model.board.width)
-            , height (toString model.board.height)
-            ]
-            (List.map (Cell.view model.board) model.cells)
-        , div [ class [ Style.Controls ] ]
+        [ div [ class [ Style.Controls ] ]
             [ if not model.disco then
-                ul []
+                ul [ class [ Style.ColorButtonGroup ] ]
                     (List.map colorButton model.colors)
               else
                 div []
@@ -318,6 +304,18 @@ view model =
                     []
                 ]
             ]
+        , div []
+            [ Html.text <|
+                if model.won then
+                    "You win"
+                else
+                    ""
+            ]
+        , Svg.svg
+            [ width (toString model.board.width)
+            , height (toString model.board.height)
+            ]
+            (List.map (Cell.view model.board) model.cells)
         ]
 
 
@@ -339,7 +337,6 @@ colorButton color =
     li []
         [ input
             [ type' "button"
-            , value "color button"
             , class [ Style.Button, Style.ColorButton color ]
             , Html.onClick <| ChangeTopleftColor color
             ]
