@@ -71,12 +71,11 @@ css =
     stylesheet <|
         [ (.) Button
             [ color (rgb 255 255 255)
-            , padding4 (px 6) (px 15) (px 3) (px 15)
+            , padding2 (px 6) (px 15)
             , fontWeight bold
             , borderRadius (px 3)
             , border (px 0)
             , cursor pointer
-            , borderBottom3 (px 3) solid transparent
             , outline none
             , margin (px 2)
             , textShadow4 (px 0) (px 1) (px 1) (rgba 0 0 0 0.1)
@@ -92,13 +91,18 @@ css =
                     ]
                 )
             , hover
-                [ borderBottomColor (rgba 0 0 0 0.25)
+                [ property "box-shadow"
+                    (String.join ","
+                        [ "0 4px 5px 0 rgba(0,0,0,.14)"
+                        , "0 2px 4px -1px rgba(0,0,0,.2)"
+                        , "0 1px 10px 0 rgba(0,0,0,.12)"
+                        ]
+                    )
+                , transform (translateY (px -1))
                 ]
             , active
                 [ boxShadow5 inset (px 0) (px 2) (px 6) (rgba 0 0 0 0.35)
-                , borderBottomColor transparent
-                , paddingBottom (px 6)
-                , borderBottomWidth (px 0)
+                , transform (translateY (px 1))
                 ]
             ]
         , (.) ButtonDefault
@@ -117,6 +121,7 @@ css =
             [ width (px 85)
             , overflow hidden
             , paddingLeft (px 0)
+            , paddingBottom (px 12)
             , descendants
                 [ li
                     [ float left
@@ -132,5 +137,6 @@ colorButtonStyle : GameColor -> Snippet
 colorButtonStyle color =
     (.) (ColorButton color)
         [ backgroundColor (toCssColor color)
-        , width (px 35)
+        , width (px 32)
+        , height (px 32)
         ]
