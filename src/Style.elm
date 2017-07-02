@@ -6,6 +6,9 @@ import Color
 import Html.CssHelpers
 import String
 
+-- this was removed from the library at some point.
+-- TODO: remove usages of this
+(.) = class
 
 type CssClasses
     = GameBoard
