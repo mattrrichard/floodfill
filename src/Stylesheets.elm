@@ -1,8 +1,6 @@
 port module Stylesheets exposing (..)
 
 import Css.File exposing (..)
-import Html.App as Html
-import Html exposing (div)
 import Style
 
 
@@ -14,11 +12,6 @@ cssFiles =
     toFileStructure [ ( "style.css", compile [ Style.css ] ) ]
 
 
-main : Program Never
+main : CssCompilerProgram
 main =
-    Html.program
-        { init = ( (), files cssFiles )
-        , update = always always ( (), Cmd.none )
-        , view = always <| div [] []
-        , subscriptions = always Sub.none
-        }
+    Css.File.compiler files cssFiles
