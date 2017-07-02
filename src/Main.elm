@@ -6,7 +6,6 @@ import Cell
 import DisjointSet as DSet exposing (DisjointSet)
 import DisjointSet.Computation as DSC
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes as Html exposing (value)
 import Html.Events as Html
 import Html.Events.Extra as Html
@@ -35,7 +34,7 @@ type alias Flags =
     }
 
 
-main : Program Flags
+main : Program Flags Model Msg
 main =
     let
         config =
@@ -109,7 +108,7 @@ init config model =
             config.cols * config.rows
 
         ids =
-            [0..numCells - 1]
+            List.range 0 <| numCells - 1
 
         colorsGen =
             Random.list numCells (randomColor config.colors)
@@ -295,7 +294,7 @@ view model =
                     )
             , div []
                 [ input
-                    [ type' "button"
+                    [ type_ "button"
                     , value "Restart"
                     , class [ Style.Button, Style.ButtonDefault ]
                     , Html.onClick Restart
@@ -321,7 +320,7 @@ view model =
 sliderInput : Int -> Int -> Int -> Float -> (Float -> Msg) -> Html Msg
 sliderInput minValue maxValue stepSize val msg =
     input
-        [ type' "range"
+        [ type_ "range"
         , Html.min <| toString minValue
         , Html.max <| toString maxValue
         , Html.step <| toString stepSize
@@ -335,7 +334,7 @@ colorButton : GameColor -> Html Msg
 colorButton color =
     li []
         [ input
-            [ type' "button"
+            [ type_ "button"
             , class [ Style.Button, Style.ColorButton color ]
             , Html.onClick <| ChangeTopleftColor color
             ]
